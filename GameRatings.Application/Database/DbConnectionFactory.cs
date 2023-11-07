@@ -5,7 +5,7 @@ namespace GameRatings.Application.Database
 {
 	public interface IDbConnectionFactory
 	{
-		Task<IDbConnection> CreateConnectionAsync();
+		Task<IDbConnection> CreateConnectionAsync(CancellationToken cancellationToken = default);
 	}
 
 	public class NpgsqlConnectionFactory : IDbConnectionFactory
@@ -17,10 +17,10 @@ namespace GameRatings.Application.Database
 			this.connectionString = connectionString;
 		}
 
-		public async Task<IDbConnection> CreateConnectionAsync()
+		public async Task<IDbConnection> CreateConnectionAsync(CancellationToken cancellationToken = default)
 		{
 			var connection = new NpgsqlConnection(this.connectionString);
-			await connection.OpenAsync();
+			await connection.OpenAsync(cancellationToken);
 			return connection;
 		}
 	}

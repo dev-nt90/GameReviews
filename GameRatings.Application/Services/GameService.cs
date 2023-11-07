@@ -20,48 +20,48 @@ namespace GameRatings.Application.Services
 			this.gameValidator = gameValidator;
 		}
 
-		public async Task<bool> CreateAsync(Game game)
+		public async Task<bool> CreateAsync(Game game, CancellationToken cancellationToken = default)
 		{
 			await this.gameValidator.ValidateAndThrowAsync(game);
-			return await this.gameRepository.CreateAsync(game);
+			return await this.gameRepository.CreateAsync(game, cancellationToken);
 		}
 
-		public Task<bool> DeleteByIdAsync(Guid id)
+		public Task<bool> DeleteByIdAsync(Guid id, CancellationToken cancellationToken = default)
 		{
-			return this.gameRepository.DeleteByIdAsync(id);
+			return this.gameRepository.DeleteByIdAsync(id, cancellationToken);
 		}
 
-		public Task<bool> ExistsByIdAsync(Guid id)
+		public Task<bool> ExistsByIdAsync(Guid id, CancellationToken cancellationToken = default)
 		{
-			return this.gameRepository.ExistsByIdAsync(id);
+			return this.gameRepository.ExistsByIdAsync(id, cancellationToken);
 		}
 
-		public Task<IEnumerable<Game>> GetAllAsync()
+		public Task<IEnumerable<Game>> GetAllAsync(CancellationToken cancellationToken = default)
 		{
-			return this.gameRepository.GetAllAsync();
+			return this.gameRepository.GetAllAsync(cancellationToken);
 		}
 
-		public Task<Game?> GetByIdAsync(Guid id)
+		public Task<Game?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
 		{
-			return this.gameRepository.GetByIdAsync(id);
+			return this.gameRepository.GetByIdAsync(id, cancellationToken);
 		}
 
-		public Task<Game?> GetBySlugAsync(string slug)
+		public Task<Game?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
 		{
-			return this.gameRepository.GetBySlugAsync(slug);
+			return this.gameRepository.GetBySlugAsync(slug, cancellationToken);
 		}
 
-		public async Task<Game?> UpdateAsync(Game game)
+		public async Task<Game?> UpdateAsync(Game game, CancellationToken cancellationToken)
 		{
 			await this.gameValidator.ValidateAndThrowAsync(game);
-			var gameExists = await this.gameRepository.ExistsByIdAsync(game.Id);
+			var gameExists = await this.gameRepository.ExistsByIdAsync(game.Id, cancellationToken);
 
 			if(!gameExists)
 			{
 				return null;
 			}
 
-			await this.gameRepository.UpdateAsync(game);
+			await this.gameRepository.UpdateAsync(game, cancellationToken);
 			return game;
 		}
 	}

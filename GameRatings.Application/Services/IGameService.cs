@@ -9,11 +9,11 @@ namespace GameRatings.Application.Services
 {
 	public interface IGameService
 	{
-		Task<Boolean> CreateAsync(Game game);
-		Task<Game?> GetByIdAsync(Guid id);
-		Task<Game?> GetBySlugAsync(String slug);
-		Task<IEnumerable<Game>> GetAllAsync();
-		Task<Game?> UpdateAsync(Game game);
-		Task<Boolean> DeleteByIdAsync(Guid id);
+		Task<Boolean> CreateAsync(Game game, CancellationToken cancellationToken);
+		Task<Game?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+		Task<Game?> GetBySlugAsync(String slug, CancellationToken cancellationToken);
+		Task<IEnumerable<Game>> GetAllAsync(CancellationToken cancellationToken);
+		Task<Game?> UpdateAsync(Game game, CancellationToken cancellationToken);
+		Task<Boolean> DeleteByIdAsync(Guid id, CancellationToken cancellationToken);
 	}
 }

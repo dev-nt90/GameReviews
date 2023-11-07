@@ -13,15 +13,17 @@ namespace GameRatings.Application.Repositories
 			this.dbConnectionFactory = dbConnectionFactory;
 		}
 
-		public async Task<bool> CreateAsync(Game game)
+		public async Task<bool> CreateAsync(Game game, CancellationToken cancellationToken = default)
 		{
-			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync())
+			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync(cancellationToken))
 			using(var transaction = connection.BeginTransaction())
 			{
 				var result = await connection.ExecuteAsync(new CommandDefinition("""
 					insert into games (id, slug, title, year_of_release)
 					values(@Id, @Slug, @Title, @YearOfRelease)
-					""", game));
+					""", 
+					game, 
+					cancellationToken: cancellationToken));
 				
 				if(result > 0)
 				{
@@ -30,7 +32,9 @@ namespace GameRatings.Application.Repositories
 						await connection.ExecuteAsync(new CommandDefinition("""
 							insert into genres (game_id, name)
 							values(@GameId, @Name)
-							""", new { GameId = game.Id, Name = genre }));
+							""", 
+							new { GameId = game.Id, Name = genre }, 
+							cancellationToken: cancellationToken));
 					}
 				}
 
@@ -40,18 +44,22 @@ namespace GameRatings.Application.Repositories
 			}
 		}
 
-		public async Task<bool> DeleteByIdAsync(Guid id)
+		public async Task<bool> DeleteByIdAsync(Guid id, CancellationToken cancellationToken = default)
 		{
-			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync())
+			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync(cancellationToken))
 			using(var transaction = connection.BeginTransaction())
 			{
 				await connection.ExecuteAsync(new CommandDefinition("""
 					delete from genres where game_id=@id
-					""", new { id }));
+					""", 
+					new { id },
+					cancellationToken: cancellationToken));
 
 				var result = await connection.ExecuteAsync(new CommandDefinition("""
 					delete from games where id=@id
-					""", new { id }));
+					""", 
+					new { id },
+					cancellationToken: cancellationToken));
 
 				transaction.Commit();
 
@@ -59,19 +67,21 @@ namespace GameRatings.Application.Repositories
 			}
 		}
 
-		public async Task<bool> ExistsByIdAsync(Guid id)
+		public async Task<bool> ExistsByIdAsync(Guid id, CancellationToken cancellationToken = default)
 		{
-			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync())
+			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync(cancellationToken))
 			{
 				return await connection.ExecuteScalarAsync<Boolean>(new CommandDefinition("""
 					select count(1) from games where id = @id
-					""", new { id }));
+					""", 
+					new { id },
+					cancellationToken: cancellationToken));
 			}
 		}
 
-		public async Task<IEnumerable<Game>> GetAllAsync()
+		public async Task<IEnumerable<Game>> GetAllAsync(CancellationToken cancellationToken = default)
 		{
-			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync())
+			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync(cancellationToken))
 			{
 				// HACK: something (propbably psql) is causing these columns to come out of this query as all lowercase (e.g. yearofrelease)
 				// that is, unless you explicitly specify the casing with the quotation syntax
@@ -85,7 +95,7 @@ namespace GameRatings.Application.Repositories
 					left join genres ge
 						on ga.id = ge.game_id
 					group by ga.id
-					"""));
+					""", cancellationToken: cancellationToken));
 
 				return result.Select(g => new Game
 				{
@@ -97,9 +107,9 @@ namespace GameRatings.Application.Repositories
 			}
 		}
 
-		public async Task<Game?> GetByIdAsync(Guid id)
+		public async Task<Game?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
 		{
-			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync())
+			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync(cancellationToken))
 			{
 				var game = await connection.QuerySingleOrDefaultAsync<Game>(
 					new CommandDefinition("""
@@ -110,7 +120,9 @@ namespace GameRatings.Application.Repositories
 							ga.year_of_release AS "YearOfRelease" 
 						from games ga
 						where id=@id
-						""", new { id }));
+						""", 
+						new { id },
+						cancellationToken: cancellationToken));
 
 				if(game is null)
 				{
@@ -120,7 +132,9 @@ namespace GameRatings.Application.Repositories
 				var genres = await connection.QueryAsync<String>(
 					new CommandDefinition("""
 						select name from genres where game_id = @id
-						""", new { id }));
+						""", 
+						new { id },
+						cancellationToken: cancellationToken));
 
 				foreach(var genre in genres)
 				{
@@ -131,9 +145,9 @@ namespace GameRatings.Application.Repositories
 			}
 		}
 
-		public async Task<Game?> GetBySlugAsync(String slug)
+		public async Task<Game?> GetBySlugAsync(String slug, CancellationToken cancellationToken = default)
 		{
-			using (var connection = await this.dbConnectionFactory.CreateConnectionAsync())
+			using (var connection = await this.dbConnectionFactory.CreateConnectionAsync(cancellationToken))
 			{
 				var game = await connection.QuerySingleOrDefaultAsync<Game>(
 					new CommandDefinition("""
@@ -144,7 +158,9 @@ namespace GameRatings.Application.Repositories
 							ga.year_of_release AS "YearOfRelease" 
 						from games ga 
 						where slug=@slug
-						""", new { slug }));
+						""", 
+						new { slug },
+						cancellationToken: cancellationToken));
 
 				if (game is null)
 				{
@@ -154,7 +170,9 @@ namespace GameRatings.Application.Repositories
 				var genres = await connection.QueryAsync<String>(
 					new CommandDefinition("""
 						select name from genres where game_id = @id
-						""", new { game.Id }));
+						""", 
+						new { game.Id },
+						cancellationToken: cancellationToken));
 
 				foreach (var genre in genres)
 				{
@@ -165,21 +183,25 @@ namespace GameRatings.Application.Repositories
 			}
 		}
 
-		public async Task<bool> UpdateAsync(Game game)
+		public async Task<bool> UpdateAsync(Game game, CancellationToken cancellationToken = default)
 		{
-			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync())
+			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync(cancellationToken))
 			using (var transaction = connection.BeginTransaction())
 			{
 				await connection.ExecuteAsync(new CommandDefinition("""
 					delete from genres where game_id = @id
-					""", new { id = game.Id }));
+					""", 
+					new { id = game.Id },
+					cancellationToken: cancellationToken));
 
 				foreach(var genre in game.Genres)
 				{
 					await connection.ExecuteAsync(new CommandDefinition("""
 						insert into genres(game_id, name)
 						values(@Id, @Name)
-						""", new { Id = game.Id, Name = genre }));
+						""", 
+						new { Id = game.Id, Name = genre },
+						cancellationToken: cancellationToken));
 				}
 
 				var result = await connection.ExecuteAsync(new CommandDefinition("""
@@ -189,7 +211,9 @@ namespace GameRatings.Application.Repositories
 						title = @Title,
 						year_of_release = @YearOfRelease
 					where id = @id
-					""", game));
+					""",
+					game,
+					cancellationToken: cancellationToken));
 
 				transaction.Commit();
 				return result > 0;

@@ -18,11 +18,13 @@ namespace GameRatings.Api.Controllers
 		}
 
 		[HttpPost(ApiEndpoints.Games.Create)]
-		public async Task<IActionResult> Create([FromBody]CreateGameRequest request)
+		public async Task<IActionResult> Create(
+			[FromBody]CreateGameRequest request, 
+			CancellationToken cancellationToken)
 		{
 			var game = request.MapToGame();
 
-			var result = await this.gameService.CreateAsync(game);
+			var result = await this.gameService.CreateAsync(game, cancellationToken);
 
 			var gameResponse = game.MapToResponse();
 
@@ -31,11 +33,13 @@ namespace GameRatings.Api.Controllers
 		}
 
 		[HttpGet(ApiEndpoints.Games.Get)]
-		public async Task<IActionResult> Get([FromRoute] String idOrSlug)
+		public async Task<IActionResult> Get(
+			[FromRoute] String idOrSlug,
+			CancellationToken cancellationToken)
 		{
 			var game = Guid.TryParse(idOrSlug, out var gameId)
-				? await this.gameService.GetByIdAsync(gameId)
-				: await this.gameService.GetBySlugAsync(idOrSlug);
+				? await this.gameService.GetByIdAsync(gameId, cancellationToken)
+				: await this.gameService.GetBySlugAsync(idOrSlug, cancellationToken);
 
 			if(game is null)
 			{
@@ -46,9 +50,9 @@ namespace GameRatings.Api.Controllers
 		}
 
 		[HttpGet(ApiEndpoints.Games.GetAll)]
-		public async Task<IActionResult> GetAll()
+		public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
 		{
-			var games = await this.gameService.GetAllAsync();
+			var games = await this.gameService.GetAllAsync(cancellationToken);
 			var gamesResponse = games.MapToResponse();
 
 			return Ok(gamesResponse);
@@ -57,10 +61,11 @@ namespace GameRatings.Api.Controllers
 		[HttpPut(ApiEndpoints.Games.Update)]
 		public async Task<IActionResult> Update(
 			[FromRoute] Guid id,
-			[FromBody] UpdateGameRequest request)
+			[FromBody] UpdateGameRequest request, 
+			CancellationToken cancellationToken)
 		{
 			var game = request.MapToGame(id);
-			var updatedGame = await this.gameService.UpdateAsync(game);
+			var updatedGame = await this.gameService.UpdateAsync(game, cancellationToken);
 
 			if (updatedGame is null)
 			{
@@ -72,9 +77,11 @@ namespace GameRatings.Api.Controllers
 		}
 
 		[HttpDelete(ApiEndpoints.Games.Delete)]
-		public async Task<IActionResult> Delete([FromRoute] Guid id)
+		public async Task<IActionResult> Delete(
+			[FromRoute] Guid id, 
+			CancellationToken cancellationToken)
 		{
-			var deleted = await this.gameService.DeleteByIdAsync(id);
+			var deleted = await this.gameService.DeleteByIdAsync(id, cancellationToken);
 			if (!deleted)
 			{
 				return NotFound();

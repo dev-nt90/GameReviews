@@ -58,6 +58,7 @@ app.UseMiddleware<ValidationMappingMiddleware>();
 
 app.MapControllers();
 
+// HACK: fake database until datagen is ready
 var dbInit = app.Services.GetRequiredService<DbInitializer>();
 await dbInit.InitializeAsync();
 
