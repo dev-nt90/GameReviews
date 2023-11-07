@@ -4,6 +4,7 @@ using GameRatings.Application.Repositories;
 using GameRatings.Application.Services;
 using GameRatings.Contracts.Requests;
 using GameRatings.Contracts.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameRatings.Api.Controllers
@@ -17,6 +18,7 @@ namespace GameRatings.Api.Controllers
 			this.gameService = gameRepository;
 		}
 
+		[Authorize(AuthConstants.TrustedMemberPolicyName)]
 		[HttpPost(ApiEndpoints.Games.Create)]
 		public async Task<IActionResult> Create(
 			[FromBody]CreateGameRequest request, 
@@ -58,6 +60,7 @@ namespace GameRatings.Api.Controllers
 			return Ok(gamesResponse);
 		}
 
+		[Authorize(AuthConstants.TrustedMemberPolicyName)]
 		[HttpPut(ApiEndpoints.Games.Update)]
 		public async Task<IActionResult> Update(
 			[FromRoute] Guid id,
@@ -76,6 +79,7 @@ namespace GameRatings.Api.Controllers
 			return Ok(response);
 		}
 
+		[Authorize(AuthConstants.AdminUserPolicyName)]
 		[HttpDelete(ApiEndpoints.Games.Delete)]
 		public async Task<IActionResult> Delete(
 			[FromRoute] Guid id, 

@@ -13,6 +13,7 @@ namespace GameRatings.Application.Repositories
 			this.dbConnectionFactory = dbConnectionFactory;
 		}
 
+		// HACK: we should mapping between data objects and domain objects between the service layer and the repository layer
 		public async Task<bool> CreateAsync(Game game, CancellationToken cancellationToken = default)
 		{
 			using(var connection = await this.dbConnectionFactory.CreateConnectionAsync(cancellationToken))
